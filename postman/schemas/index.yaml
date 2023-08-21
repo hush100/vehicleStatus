@@ -1,0 +1,86 @@
+openapi: 3.0.3
+info:
+  title: Vehicle Status
+  version: 1.0.0
+  description: API to perform critical status checks on connected vehicles
+servers:
+  - url: https://b4f59029-8074-435b-9713-7a20858774e7.mock.pstmn.io
+paths:
+  /vehicles/{vin}/status/odometer:
+    parameters:
+      - $ref: '#/components/parameters/vinParam'
+    get:
+      summary: Returns the current odometer reading in both km and miles
+      operationId: getOdometerStatus
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  km:
+                    type: number
+                  miles:
+                    type: number
+              examples:
+                Success:
+                  summary: VIN 4Y1SL65848Z411439
+                  value:
+                    km: 100000
+                    miles: 62000
+                LowMileage:
+                  summary: VIN JA3AP57J5SY000719
+                  value:
+                    km: 241
+                    miles: 150
+                UnexpectedError:
+                  summary: VIN JH4DA1750HS018437
+                  value:
+                    error: Unexpected error occurred
+                NotFound:
+                  summary: VIN 1C4NJPBA1CD661292
+                  value:
+                    error: Vehicle not found
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                NotFound:
+                  summary: VIN 1C4NJPBA1CD661292
+                  value:
+                    error: Vehicle not found
+        '500':
+          $ref: '#/components/responses/500UnexpectedError'
+components:
+  parameters:
+    vinParam:
+      in: path
+      name: vin
+      description: Required 17-character VIN (Vehicle Identification Number)
+      schema:
+        type: string
+      example: 4Y1SL65848Z411439
+      required: true
+  responses:
+    500UnexpectedError:
+      description: Unexpected error
+      content:
+        text/plain:
+          schema:
+            type: string
+            example: Unexpected error occurred
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-key
+security:
+  - ApiKeyAuth: []
